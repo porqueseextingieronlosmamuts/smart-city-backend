@@ -138,3 +138,4 @@ select * from paradero;
 select * from recorrido;
 select * from tiempo;
 select * from fact_movilidad;
+select * from log_etl;
