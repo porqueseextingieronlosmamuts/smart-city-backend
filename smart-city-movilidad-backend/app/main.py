@@ -1,8 +1,10 @@
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from .database import engine
 from .routers import kpis, sla
@@ -23,6 +25,16 @@ app.add_middleware(
 
 app.include_router(kpis.router)
 app.include_router(sla.router)
+
+
+@app.exception_handler(SQLAlchemyError)
+async def sqlalchemy_exception_handler(request: Request, exc: SQLAlchemyError):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "No se pudo consultar la base de datos. Verifica que MySQL esté corriendo, que la URL de conexión sea correcta y que las credenciales sean válidas."
+        },
+    )
 
 
 @app.get("/", tags=["Root"])
