@@ -46,6 +46,7 @@ create table log_etl(
 id_log int auto_increment primary key,
 fecha_ejecucion datetime,
 registro_cargados int,
+duracion_seg decimal(10,2),
 estado varchar(30)
 );
 

@@ -9,9 +9,9 @@ en el README):
     duplicado exacto (mismo paradero+recorrido+tiempo+medidas). No hay
     una tabla agregada en este esquema, así que esta es la mejor
     aproximación disponible sin agregar tablas nuevas.
-  - Pipeline NO se puede calcular: log_etl solo guarda fecha_ejecucion,
-    no un inicio y un fin. Por eso esta dimensión siempre da "rojo" con
-    valor nulo. Ver README para la columna opcional que se puede agregar.
+    - Pipeline se calcula desde log_etl.duracion_seg (duración de la corrida
+        ETL en segundos). Si la columna no existe o no hay dato, esta dimensión
+        queda en "sin_datos" y no arrastra el estado general.
 """
 from datetime import datetime
 
@@ -57,8 +57,21 @@ def get_sla(conn: Connection = Depends(get_connection)):
     """)).mappings().first()
     pct_unicidad = float(fila["pct"]) if fila and fila["pct"] is not None else 100.0
 
-    # 4) Pipeline: no calculable con el esquema actual (log_etl no guarda duración)
+    # 4) Pipeline: duración de la corrida ETL en segundos (si existe columna duracion_seg)
+    fila = conn.execute(text("""
+        SELECT COUNT(*) AS existe
+        FROM information_schema.columns
+        WHERE table_schema = DATABASE()
+          AND table_name = 'log_etl'
+          AND column_name = 'duracion_seg'
+    """)).mappings().first()
+    existe_duracion_seg = bool(fila and fila["existe"])
+
     duracion_pipeline = None
+    if existe_duracion_seg:
+        fila = conn.execute(text("SELECT duracion_seg AS duracion FROM log_etl ORDER BY id_log DESC LIMIT 1")).mappings().first()
+        if fila and fila["duracion"] is not None:
+            duracion_pipeline = float(fila["duracion"])
 
     # 5) Uptime: % de corridas del ETL con estado 'exitoso'
     fila = conn.execute(text("""
@@ -99,7 +112,7 @@ def get_sla(conn: Connection = Depends(get_connection)):
         "pipeline": {
             "valor": duracion_pipeline, "unidad": "segundos", "estado": estado_pipeline,
             "umbral": f"<={settings.sla_pipeline_verde_seg}s verde, <={settings.sla_pipeline_amarillo_seg}s amarillo",
-            "nota": "log_etl no registra duración (falta fecha_inicio o duracion_seg); agrega esa columna para medir esto de verdad.",
+            "nota": "Se usa log_etl.duracion_seg. Si está en null o la columna no existe, queda sin_datos.",
         },
         "uptime": {
             "valor": pct_uptime, "unidad": "%", "estado": estado_uptime,

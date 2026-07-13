@@ -45,7 +45,6 @@ JOIN recorrido r ON TRIM(r.codigo) = TRIM(s.recorrido)
 JOIN tiempo t ON t.fecha = s.fecha AND TRIM(t.franja) = TRIM(s.franja_horaria)
 WHERE s.fecha IS NOT NULL;
 
--- Log de una corrida del ETL (para Uptime; Pipeline no se puede loguear,
--- ver nota en el README sobre la columna de duración que falta)
-INSERT INTO log_etl (fecha_ejecucion, registro_cargados, estado)
-VALUES (NOW(), (SELECT COUNT(*) FROM fact_movilidad), 'exitoso');
+-- Log de una corrida del ETL (incluye duración para medir Pipeline SLA)
+INSERT INTO log_etl (fecha_ejecucion, registro_cargados, duracion_seg, estado)
+VALUES (NOW(), (SELECT COUNT(*) FROM fact_movilidad), 142.50, 'exitoso');

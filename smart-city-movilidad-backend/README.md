@@ -88,17 +88,17 @@ uvicorn app.main:app --reload
 | Completitud | % de `fact_movilidad` con `tiempo_prometido`, `tiempo_real`, `pasajeros` no nulos | igual que antes |
 | Freshness | días desde `MAX(log_etl.fecha_ejecucion)` | **cambio**: antes se leía de la tabla de hechos; aquí `fact_movilidad` no tiene fecha de carga propia, así que se usa el log del ETL |
 | Unicidad | % de filas de `fact_movilidad` que no son un duplicado exacto (mismo paradero+recorrido+tiempo+medidas) | **cambio**: antes se validaba sobre una tabla agregada; este esquema no tiene una, así que se detectan duplicados exactos en la tabla de hechos directamente |
-| Pipeline | **no calculable** — siempre `null` / rojo | `log_etl` solo tiene `fecha_ejecucion` (un timestamp), no `fecha_inicio` + `fecha_fin`. Sin eso no hay duración que medir |
-| Uptime | % de filas en `log_etl` con `estado='exitoso'` | igual que antes |
+| Pipeline | segundos de la última corrida (`log_etl.duracion_seg`) | si no existe columna o viene `NULL`, se marca `sin_datos` y no arrastra el estado general |
+| Uptime | % de filas en `log_etl` con estado exitoso (`exitoso`, `ok`, `success`, `successful`) | más robusto ante variantes comunes del ETL |
 
-### Si quieres que "Pipeline" funcione de verdad
+### Si ya tenías la tabla creada sin duración
 
-Agrega una columna a `log_etl` (no rompe nada de lo que ya tienes):
+Agrega la columna a `log_etl` (no rompe nada de lo que ya tienes):
 ```sql
 ALTER TABLE log_etl ADD COLUMN duracion_seg DECIMAL(10,2) NULL;
 ```
-Y que tu proceso de carga la llene al terminar (fin - inicio, en segundos).
-Avísame cuando la agregues y actualizo el endpoint para que la lea.
+Y haz que tu proceso de carga la llene al terminar (fin - inicio, en segundos).
+El endpoint ya está listo para leerla automáticamente.
 
 ## Cargar tus datos reales
 
