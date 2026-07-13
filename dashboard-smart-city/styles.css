@@ -1,0 +1,21 @@
+:root{
+  --verde:#198754;
+  --amarillo:#ffb703;
+  --rojo:#dc3545;
+  --bg:#f8f9fa;
+}
+body{background:var(--bg);font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+.kpi-card{min-height:110px}
+.kpi-value{font-size:1.6rem;font-weight:700}
+.kpi-meta{font-size:0.85rem}
+.semaforo{width:14px;height:14px;border-radius:50%;display:inline-block;margin-right:8px}
+.semaforo-large{width:90px;height:90px;border-radius:50%;}
+.semaforo-large.verde{background:var(--verde)}
+.semaforo-large.amarillo{background:var(--amarillo)}
+.semaforo-large.rojo{background:var(--rojo)}
+.kpi-card .meta-row{display:flex;justify-content:space-between;align-items:center}
+
+/* Responsive tweaks */
+@media(min-width:992px){
+  .kpi-card{min-height:130px}
+}

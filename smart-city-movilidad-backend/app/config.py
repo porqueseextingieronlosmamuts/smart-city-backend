@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "mysql+pymysql://root:@localhost:3306/paraderos"
+    database_url: str = "mysql+pymysql://root:M0PAI0123!s@localhost:3306/paraderos"
 
     sla_completitud_verde: float = 95.0
     sla_completitud_amarillo: float = 90.0
