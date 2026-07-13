@@ -1,4 +1,4 @@
-const API_BASE = ''; // relative to current host; adjust if serving from different origin
+const API_BASE = 'http://127.0.0.1:8000'; // relative to current host; adjust if serving from different origin
 
 const state = { sla: null, pasajeros: null, puntualidad: null };
 
