@@ -68,24 +68,6 @@ uvicorn app.main:app --reload
 
 `http://127.0.0.1:8000/docs` para probar todo.
 
-## El otro caso: frontend y backend en distinto origen
-
-Si el dashboard se sirve desde un host o puerto distinto al backend, entonces no debes usar rutas relativas desde el frontend. En `dashboard-smart-city/app.js` cambia:
-
-```js
-const API_BASE = '';
-```
-
-a:
-
-```js
-const API_BASE = 'http://127.0.0.1:8000';
-```
-
-De esta forma las llamadas quedarán como `fetch(API_BASE + '/api/sla')` y el navegador apuntará al backend correcto.
-
-Tu backend ya permite CORS desde cualquier origen (`allow_origins=["*"]`), por lo que no hace falta cambiar nada allí para este caso.
-
 ## Endpoints
 
 | Método | Ruta | Descripción |

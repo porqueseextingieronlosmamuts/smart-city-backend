@@ -89,7 +89,7 @@ function renderGlobalSemaforo(sla){
   document.getElementById('estado-general-text').textContent = sla.estado_general.toUpperCase();
 }
 
-let barChart=null,lineChart=null;
+let barChart=null,lineChart=null,satChartInstance=null;
 
 function renderBarChart(pasajeros){
   const labels = pasajeros.map(r=>r.franja_horaria);
@@ -126,8 +126,8 @@ function renderSatisfaccionChart(satisfaccion){
   const labels = satisfaccion.map(r=>r.paradero);
   const data = satisfaccion.map(r=>Number(r.promedio_general));
   const ctx = document.getElementById('satChart');
-  if(window.satChart) window.satChart.destroy();
-  window.satChart = new Chart(ctx, {
+  if(satChartInstance) satChartInstance.destroy();
+  satChartInstance = new Chart(ctx, {
     type:'bar',
     data:{labels, datasets:[{label:'Sat. promedio', data, backgroundColor:'#ffc107'}]},
     options:{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, max:5}}}
@@ -142,8 +142,8 @@ function renderTiempoEsperaTable(tiempo){
     tr.innerHTML = `
       <td>${r.paradero}</td>
       <td>${r.franja_horaria}</td>
-      <td>${Number(r.tiempo_real).toFixed(2)}</td>
-      <td>${Number(r.tiempo_prometido).toFixed(2)}</td>
+      <td>${Number(r.tiempo_real_promedio_min).toFixed(2)}</td>
+      <td>${Number(r.tiempo_prometido_promedio_min).toFixed(2)}</td>
       <td>${Number(r.desviacion_promedio_min).toFixed(2)}</td>
     `;
     tbody.appendChild(tr);

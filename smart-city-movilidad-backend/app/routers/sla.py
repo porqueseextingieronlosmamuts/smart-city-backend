@@ -62,7 +62,11 @@ def get_sla(conn: Connection = Depends(get_connection)):
 
     # 5) Uptime: % de corridas del ETL con estado 'exitoso'
     fila = conn.execute(text("""
-        SELECT ROUND(SUM(CASE WHEN estado = 'exitoso' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS pct
+        SELECT ROUND(
+            SUM(CASE WHEN LOWER(TRIM(estado)) IN ('exitoso', 'ok', 'success', 'successful') THEN 1 ELSE 0 END)
+            * 100.0 / COUNT(*),
+            2
+        ) AS pct
         FROM log_etl
     """)).mappings().first()
     pct_uptime = float(fila["pct"]) if fila and fila["pct"] is not None else 100.0
@@ -70,8 +74,14 @@ def get_sla(conn: Connection = Depends(get_connection)):
     estado_completitud = estado_semaforo(pct_completitud, settings.sla_completitud_verde, settings.sla_completitud_amarillo, True)
     estado_freshness = estado_semaforo(dias_freshness, settings.sla_freshness_verde_dias, settings.sla_freshness_amarillo_dias, False)
     estado_unicidad = estado_semaforo(pct_unicidad, settings.sla_unicidad_verde, settings.sla_unicidad_amarillo, True)
-    estado_pipeline = estado_semaforo(duracion_pipeline, settings.sla_pipeline_verde_seg, settings.sla_pipeline_amarillo_seg, False)
+    estado_pipeline = estado_semaforo(duracion_pipeline, settings.sla_pipeline_verde_seg, settings.sla_pipeline_amarillo_seg, False) if duracion_pipeline is not None else "sin_datos"
     estado_uptime = estado_semaforo(pct_uptime, settings.sla_uptime_verde, settings.sla_uptime_amarillo, True)
+
+    # Si pipeline no se puede medir con el esquema actual, no debe arrastrar
+    # el estado global a rojo por falta de datos.
+    estados_para_general = [estado_completitud, estado_freshness, estado_unicidad, estado_uptime]
+    if duracion_pipeline is not None:
+        estados_para_general.append(estado_pipeline)
 
     return {
         "completitud": {
@@ -95,6 +105,6 @@ def get_sla(conn: Connection = Depends(get_connection)):
             "valor": pct_uptime, "unidad": "%", "estado": estado_uptime,
             "umbral": f">={settings.sla_uptime_verde}% verde, >={settings.sla_uptime_amarillo}% amarillo",
         },
-        "estado_general": estado_general(estado_completitud, estado_freshness, estado_unicidad, estado_pipeline, estado_uptime),
+        "estado_general": estado_general(*estados_para_general),
         "timestamp": datetime.now().isoformat(),
     }
