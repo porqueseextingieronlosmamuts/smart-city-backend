@@ -58,15 +58,83 @@ smart-city-movilidad-backend/
 
 ## Instalación
 
+### Requisitos previos
+- **Python 3.8+** instalado
+- **MySQL 8.0+** corriendo localmente o en un servidor
+- **Git** (opcional, para clonar el repo)
+
+### Pasos de instalación
+
+#### 1. Navega a la carpeta del proyecto
 ```bash
 cd smart-city-movilidad-backend
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env   # ajusta DATABASE_URL a tu MySQL
-uvicorn app.main:app --reload
 ```
 
-`http://127.0.0.1:8000/docs` para probar todo.
+#### 2. Crea un entorno virtual
+**En Windows (PowerShell o CMD):**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+**En macOS/Linux:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### 3. Instala las dependencias
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Configura las variables de entorno
+```bash
+cp .env.example .env
+```
+Luego edita `.env` y ajusta la URL de conexión a MySQL:
+```env
+DATABASE_URL=mysql+pymysql://usuario:contraseña@localhost:3306/Paraderos
+```
+
+---
+
+## Iniciar el servidor
+
+### Opción 1: Modo desarrollo (con recarga automática)
+```bash
+uvicorn app.main:app --reload
+```
+- El servidor se inicia en `http://127.0.0.1:8000`
+- Se recarga automáticamente al cambiar archivos
+- Ideal para desarrollo
+
+### Opción 2: Modo producción (sin recarga)
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+- El servidor es accesible desde cualquier máquina en la red
+- No se recarga automáticamente
+- Más estable para producción
+
+### Opción 3: Con más workers (para más carga)
+```bash
+uvicorn app.main:app --workers 4 --host 0.0.0.0 --port 8000
+```
+- Usa 4 procesos en paralelo
+- Mejor rendimiento bajo alta concurrencia
+
+---
+
+## Acceder a la API
+
+Una vez que el servidor esté corriendo:
+
+- **Documentación interactiva (Swagger):** http://127.0.0.1:8000/docs
+- **Documentación alternativa (ReDoc):** http://127.0.0.1:8000/redoc
+- **Health check:** http://127.0.0.1:8000/api/health
+
+En Swagger puedes probar todos los endpoints directamente desde el navegador.
 
 ## Endpoints
 
